@@ -1,7 +1,9 @@
 import sys
 
+import time
 import win32con
 import win32gui
+import win32api
 from PyQt5.QtWidgets import QApplication, QMainWindow, QListWidgetItem
 from PyQt5 import uic, QtCore
 
@@ -17,6 +19,17 @@ class MyWindow(QMainWindow):
         self.btnHide.clicked.connect(self.btnHide_onClick)
         self.btnShow.clicked.connect(self.btnShow_onClick)
         self.btnExit.clicked.connect(self.btnExit_onClick)
+        self.timer = timer = QtCore.QTimer()
+        timer.setInterval(10)
+        timer.timeout.connect(self.tick)
+        timer.start()
+
+    def tick(self):
+        if win32api.GetAsyncKeyState(win32con.VK_F2) & 0x8000:
+            if win32api.GetAsyncKeyState(win32con.VK_SHIFT) & 0x8000:
+                self.btnShow.clicked.emit()
+            else:
+                self.btnHide.clicked.emit()
 
     def btnRefresh_onClick(self, v):
         self.listWindow.clear()
@@ -43,6 +56,8 @@ class MyWindow(QMainWindow):
                 hWnd = item.data(QtCore.Qt.UserRole)
                 win32gui.ShowWindow(hWnd, win32con.SW_HIDE)
 
+        self.hide()
+
     def btnShow_onClick(self, v):
         for i in range(self.listWindow.count()):
             item = self.listWindow.item(i)
@@ -51,9 +66,10 @@ class MyWindow(QMainWindow):
                 hWnd = item.data(QtCore.Qt.UserRole)
                 win32gui.ShowWindow(hWnd, win32con.SW_SHOW)
 
+        self.show()
 
     def btnExit_onClick(self, v):
-       sys.exit()
+       app.quit()
 
 
 app = QApplication(sys.argv)
